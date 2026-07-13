@@ -19,7 +19,6 @@ function Pricing() {
       _id: "free",
       name: "Free",
       price: "Rs 0",
-      amount: 0,
       credits: 200,
       description: "Perfect for beginners starting interview preparation.",
       features: [
