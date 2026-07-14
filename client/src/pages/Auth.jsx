@@ -10,10 +10,12 @@ import { ServerUrl } from "../App";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setUserData } from "../redux/userSlice";
+import { useToast } from "../components/Toast.jsx";
 
 function Auth({ isModel = false }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const toast = useToast();
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,8 +23,9 @@ function Auth({ isModel = false }) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const completeAuth = (user) => {
+  const completeAuth = (user, successMsg) => {
     dispatch(setUserData(user));
+    if (successMsg) toast.success(successMsg);
     if (!isModel) navigate("/");
   };
 
@@ -34,9 +37,14 @@ function Auth({ isModel = false }) {
       const endpoint = isSignUpMode ? "/api/auth/register" : "/api/auth/login";
       const payload = isSignUpMode ? { name, email, password } : { email, password };
       const result = await axios.post(ServerUrl + endpoint, payload, { withCredentials: true });
-      completeAuth(result.data);
+      completeAuth(
+        result.data,
+        isSignUpMode ? "Account created successfully!" : "Welcome back!"
+      );
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Unable to continue. Please try again.");
+      const errMsg = requestError.response?.data?.message || "Unable to continue. Please try again.";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -51,9 +59,11 @@ function Auth({ isModel = false }) {
         { name: response.user.displayName, email: response.user.email },
         { withCredentials: true },
       );
-      completeAuth(result.data);
+      completeAuth(result.data, "Welcome back!");
     } catch (requestError) {
-      setError("Google sign-in failed. Please try again.");
+      const errMsg = "Google sign-in failed. Please try again.";
+      setError(errMsg);
+      toast.error(errMsg);
       dispatch(setUserData(null));
     }
   };

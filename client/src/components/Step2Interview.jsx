@@ -10,9 +10,11 @@ import { useEffect } from "react";
 import axios from "axios";
 import { ServerUrl } from "../App";
 import { BsArrowRight, BsSliders } from "react-icons/bs";
+import { useToast } from "../components/Toast.jsx";
 
 function Step2Interview({ interviewData, onFinish, onBack, onBackHome }) {
   const { interviewId, questions, userName } = interviewData;
+  const toast = useToast();
   const [isIntroPhase, setIsIntroPhase] = useState(true);
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -164,6 +166,7 @@ function Step2Interview({ interviewData, onFinish, onBack, onBackHome }) {
     const runIntro = async () => {
       if (isIntroPhase) {
         await speakText(
+          
           `Hi ${userName}, it's great to meet you today. I hope you're feeling confident and ready.`,
         );
 
@@ -228,6 +231,12 @@ function Step2Interview({ interviewData, onFinish, onBack, onBackHome }) {
       setAnswer((prev) => prev + " " + transcript);
     };
 
+    recognition.onerror = (event) => {
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        toast.error("Microphone access denied. Please check your permissions.");
+      }
+    };
+
     recognitionRef.current = recognition;
   }, []);
 
@@ -275,6 +284,7 @@ function Step2Interview({ interviewData, onFinish, onBack, onBackHome }) {
       setIsSubmitting(false);
     } catch (error) {
       console.log(error);
+      toast.error(error.response?.data?.message || "Failed to submit answer. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -307,9 +317,11 @@ function Step2Interview({ interviewData, onFinish, onBack, onBackHome }) {
       );
 
       console.log(result.data);
+      toast.success("Interview completed successfully!");
       onFinish(result.data);
     } catch (error) {
       console.log(error);
+      toast.error(error.response?.data?.message || "Failed to finalize interview. Please check connection.");
     }
   };
 

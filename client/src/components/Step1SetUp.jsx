@@ -12,10 +12,12 @@ import axios from "axios";
 import { ServerUrl } from "../App";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../redux/userSlice";
+import { useToast } from "../components/Toast.jsx";
 
 function Step1SetUp({ onStart }) {
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const toast = useToast();
   const [role, setRole] = useState("");
   const [experience, setExperience] = useState("");
   const [mode, setMode] = useState("Technical");
@@ -49,16 +51,21 @@ function Step1SetUp({ onStart }) {
       setSkills(result.data.skills || []);
       setResumeText(result.data.resumeText || "");
       setAnalysisDone(true);
+      toast.success("Resume analyzed successfully!");
 
       setAnalyzing(false);
     } catch (error) {
       console.log(error);
-
+      toast.error(error.response?.data?.message || "Failed to analyze resume. Please check file format.");
       setAnalyzing(false);
     }
   };
 
   const handleStart = async () => {
+    if (!role.trim()) {
+      toast.warning("Please enter a Target Job Role to begin.");
+      return;
+    }
     setLoading(true);
     try {
       const result = await axios.post(
@@ -73,9 +80,11 @@ function Step1SetUp({ onStart }) {
         );
       }
       setLoading(false);
+      toast.success("Questions generated! Good luck.");
       onStart(result.data);
     } catch (error) {
       console.log(error);
+      toast.error(error.response?.data?.message || "Failed to generate questions. Please verify network or credits.");
       setLoading(false);
     }
   };

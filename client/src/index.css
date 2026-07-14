@@ -225,3 +225,15 @@ body {
   .print\:bg-gray-50, .print\:bg-gray-100 { background-color: #f3f4f6 !important; }
   .print\:border-gray-200 { border-color: #e5e7eb !important; }
 }
+
+/* Ensure React Toastify container stays above all modals, overlays, and sticky headers */
+.Toastify__toast-container {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+.Toastify__toast {
+  border-radius: 1rem !important;
+  font-family: var(--font-sans) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}

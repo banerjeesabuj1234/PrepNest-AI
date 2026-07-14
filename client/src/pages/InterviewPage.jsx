@@ -8,6 +8,7 @@ import Step2Interview from "../components/Step2Interview";
 import Step3Report from "../components/Step3Report";
 import { FaArrowLeft, FaHistory, FaSpinner, FaTrash, FaPlus } from "react-icons/fa";
 import { motion } from "motion/react";
+import { useToast } from "../components/Toast.jsx";
 
 function InterviewPage({ initialTab = "setup" }) {
   const [step, setStep] = useState(1);
@@ -17,6 +18,7 @@ function InterviewPage({ initialTab = "setup" }) {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteError, setDeleteError] = useState("");
+  const toast = useToast();
 
   const navigate = useNavigate();
 
@@ -41,33 +43,35 @@ function InterviewPage({ initialTab = "setup" }) {
     }
   }, [activeTab]);
 
-  const deleteInterview = async (event, interviewId) => {
+  const deleteInterview = (event, interviewId) => {
     event.stopPropagation();
 
-    const confirmed = window.confirm(
+    toast.confirm(
       "Delete this interview permanently? This action cannot be undone.",
+      async () => {
+        setDeletingId(interviewId);
+        setDeleteError("");
+
+        try {
+          await axios.delete(ServerUrl + "/api/interview/" + interviewId, {
+            withCredentials: true,
+          });
+          setInterviews((currentInterviews) =>
+            currentInterviews.filter((interview) => interview._id !== interviewId),
+          );
+          toast.success("Interview deleted successfully!");
+        } catch (error) {
+          console.error("Failed to delete interview:", error);
+          const errMsg =
+            error.response?.data?.message ||
+            "Failed to delete interview. Please try again.";
+          setDeleteError(errMsg);
+          toast.error(errMsg);
+        } finally {
+          setDeletingId(null);
+        }
+      }
     );
-    if (!confirmed) return;
-
-    setDeletingId(interviewId);
-    setDeleteError("");
-
-    try {
-      await axios.delete(ServerUrl + "/api/interview/" + interviewId, {
-        withCredentials: true,
-      });
-      setInterviews((currentInterviews) =>
-        currentInterviews.filter((interview) => interview._id !== interviewId),
-      );
-    } catch (error) {
-      console.error("Failed to delete interview:", error);
-      setDeleteError(
-        error.response?.data?.message ||
-          "Failed to delete interview. Please try again.",
-      );
-    } finally {
-      setDeletingId(null);
-    }
   };
 
   return (
