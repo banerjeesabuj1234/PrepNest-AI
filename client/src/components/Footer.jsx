@@ -14,8 +14,8 @@ function Footer() {
           </h2>
         </div>
         <p className="text-slate-500 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed font-semibold">
-          AI-powered interview preparation platform designed to improve
-          communication skills, technical depth, and professional confidence.
+          AI-powered placement preparation platform featuring ATS Resume Checker,
+          Mock Tests, Coding Tests, and AI Mock Interviews.
         </p>
         <p className="text-slate-400 text-[10px] sm:text-xs mt-6 font-semibold">
           &copy; {new Date().getFullYear()} PrepNest AI. All rights reserved.

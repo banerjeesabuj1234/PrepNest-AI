@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { ServerUrl } from "../App";
 import { setUserData } from "../redux/userSlice";
 import Navbar from "../components/Navbar";
+import { useToast } from "../components/Toast.jsx";
 import Footer from "../components/Footer";
 import {
   FaBuilding,
@@ -119,6 +120,7 @@ const CATEGORIES = [
 function CompanyMockTests() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const toast = useToast();
   const { userData } = useSelector((state) => state.user);
 
   // Stage: 'selection', 'exam', 'report', 'history'
@@ -180,13 +182,13 @@ function CompanyMockTests() {
 
   const handleGenerateTest = async () => {
     if (!userData) {
-      alert("Please login first to generate AI Mock Tests.");
+      toast.warning("Please login first to generate AI Mock Tests.");
       navigate("/auth");
       return;
     }
 
     if (userData.credits < 15) {
-      alert(
+      toast.warning(
         "Not enough credits! You need at least 15 credits to generate a custom company mock test.",
       );
       navigate("/pricing");
@@ -262,7 +264,7 @@ function CompanyMockTests() {
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to submit test. Please try again.");
+      toast.error("Failed to submit test. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -285,36 +287,48 @@ function CompanyMockTests() {
     }
   };
 
-  const deleteMockTest = async (testId) => {
-    if (!window.confirm("Delete this mock test permanently? This action cannot be undone.")) return;
-    setDeletingId(testId);
-    setDeleteError("");
-    try {
-      await axios.delete(ServerUrl + "/api/mock-test/" + testId, { withCredentials: true });
-      setHistoryList((tests) => tests.filter((test) => test._id !== testId));
-    } catch (error) {
-      setDeleteError(error.response?.data?.message || "Failed to delete mock test. Please try again.");
-    } finally {
-      setDeletingId(null);
-    }
+  const deleteMockTest = (testId) => {
+    toast.confirm(
+      "Delete this mock test permanently? This action cannot be undone.",
+      async () => {
+        setDeletingId(testId);
+        setDeleteError("");
+        try {
+          await axios.delete(ServerUrl + "/api/mock-test/" + testId, { withCredentials: true });
+          setHistoryList((tests) => tests.filter((test) => test._id !== testId));
+          toast.success("Mock test deleted successfully!");
+        } catch (error) {
+          setDeleteError(error.response?.data?.message || "Failed to delete mock test. Please try again.");
+          toast.error(error.response?.data?.message || "Failed to delete mock test. Please try again.");
+        } finally {
+          setDeletingId(null);
+        }
+      }
+    );
   };
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
-        {/* Back to Home Button */}
-        <div className="mb-6 flex items-center justify-between">
+        {/* Back Buttons */}
+        <div className="mb-6 flex items-center gap-4 text-xs font-bold text-slate-500">
           <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition text-xs font-bold cursor-pointer"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 hover:text-slate-900 transition cursor-pointer"
           >
             <FaArrowLeft />
-            <span>Back to Home</span>
+            <span>Back</span>
+          </button>
+          <span className="text-slate-300">|</span>
+          <button
+            onClick={() => navigate("/")}
+            className="hover:text-slate-900 transition cursor-pointer"
+          >
+            Back to Home
           </button>
         </div>
 
-        {/* Navigation / Header Bar */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 pb-6 border-b border-slate-200">
           <div>
             <span className="bg-cyan-50 border border-cyan-100 text-cyan-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
@@ -359,12 +373,33 @@ function CompanyMockTests() {
           >
             {/* Step 1: Select Company */}
             <div>
-              <h2 className="text-lg font-display font-bold text-slate-800 flex items-center gap-3 mb-5">
-                <span className="w-7 h-7 bg-cyan-50 text-cyan-600 rounded-lg flex items-center justify-center text-xs font-bold border border-cyan-100">
-                  1
-                </span>
-                Select Target Company
-              </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5 pb-1">
+                <h2 className="text-lg font-display font-bold text-slate-800 flex items-center gap-3">
+                  <span className="w-7 h-7 bg-cyan-50 text-cyan-600 rounded-lg flex items-center justify-center text-xs font-bold border border-cyan-100">
+                    1
+                  </span>
+                  Select Target Company
+                </h2>
+
+                {selectedCompany === "Custom" && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full sm:max-w-xs flex flex-col gap-1.5"
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 shrink-0">
+                      Enter Target Company Name:
+                    </span>
+                    <input
+                      type="text"
+                      value={customCompany}
+                      onChange={(e) => setCustomCompany(e.target.value)}
+                      placeholder="e.g. Netflix, Apple, Bloomberg, Uber, Oracle..."
+                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition text-xs font-semibold placeholder-slate-400 shadow-sm"
+                    />
+                  </motion.div>
+                )}
+              </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {COMPANIES.map((company) => {
@@ -394,25 +429,6 @@ function CompanyMockTests() {
                   );
                 })}
               </div>
-
-              {selectedCompany === "Custom" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="mt-5"
-                >
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-550 mb-2">
-                    Enter Company Name:
-                  </label>
-                  <input
-                    type="text"
-                    value={customCompany}
-                    onChange={(e) => setCustomCompany(e.target.value)}
-                    placeholder="e.g. Cisco, HCL, Goldman Sachs, Uber..."
-                    className="w-full max-w-md px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-slate-800 placeholder-slate-450 transition text-sm font-semibold"
-                  />
-                </motion.div>
-              )}
             </div>
 
             <hr className="border-slate-200/50" />

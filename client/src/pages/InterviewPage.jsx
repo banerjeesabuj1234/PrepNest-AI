@@ -72,11 +72,11 @@ function InterviewPage({ initialTab = "setup" }) {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-850 flex flex-col font-sans">
-      {step === 1 && <Navbar />}
+      {(step === 1 || step === 2) && <Navbar />}
 
       <div
         className={
-          step === 1
+          (step === 1 || step === 2)
             ? "flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10"
             : "min-h-screen bg-slate-50"
         }
@@ -86,7 +86,11 @@ function InterviewPage({ initialTab = "setup" }) {
             {/* Navigation / Header Bar */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 pb-6 border-b border-slate-200">
               <div>
-                <button onClick={() => navigate("/")} className="mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-cyan-600 transition cursor-pointer" aria-label="Back to home"><FaArrowLeft size={12} /> Back to Home</button>
+                <div className="mb-4 flex items-center gap-3 text-xs font-bold text-slate-500">
+                  <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 hover:text-cyan-600 transition cursor-pointer" aria-label="Back"><FaArrowLeft size={12} /> Back</button>
+                  <span className="text-slate-300">|</span>
+                  <button onClick={() => navigate("/")} className="hover:text-cyan-600 transition cursor-pointer">Back to Home</button>
+                </div>
                 <span className="bg-cyan-50 border border-cyan-100 text-cyan-650 text-cyan-650 text-cyan-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                   AI Smart Mock Interviews
                 </span>
@@ -255,6 +259,16 @@ function InterviewPage({ initialTab = "setup" }) {
         {step === 2 && (
           <Step2Interview
             interviewData={interviewData}
+            onBack={() => {
+              if (window.confirm("Are you sure you want to exit the current interview session? Your progress will be lost.")) {
+                setStep(1);
+              }
+            }}
+            onBackHome={() => {
+              if (window.confirm("Are you sure you want to exit the current interview session? Your progress will be lost.")) {
+                navigate("/");
+              }
+            }}
             onFinish={(report) => {
               setInterviewData(report);
               setStep(3);

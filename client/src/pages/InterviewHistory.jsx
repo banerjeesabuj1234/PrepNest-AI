@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ServerUrl } from "../App";
 import Navbar from "../components/Navbar";
-import { FaArrowLeft, FaHistory, FaSpinner, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaHistory, FaHome, FaSpinner, FaTrash } from "react-icons/fa";
+import { useToast } from "../components/Toast.jsx";
 
 function InterviewHistory() {
+  const toast = useToast();
   const [interviews, setInterviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -26,19 +28,25 @@ function InterviewHistory() {
     getMyInterviews();
   }, []);
 
-  const deleteInterview = async (event, interviewId) => {
+  const deleteInterview = (event, interviewId) => {
     event.stopPropagation();
-    if (!window.confirm("Delete this interview permanently? This action cannot be undone.")) return;
-    setDeletingId(interviewId);
-    setDeleteError("");
-    try {
-      await axios.delete(ServerUrl + "/api/interview/" + interviewId, { withCredentials: true });
-      setInterviews((current) => current.filter((item) => item._id !== interviewId));
-    } catch (error) {
-      setDeleteError(error.response?.data?.message || "Failed to delete interview. Please try again.");
-    } finally {
-      setDeletingId(null);
-    }
+    toast.confirm(
+      "Delete this interview permanently? This action cannot be undone.",
+      async () => {
+        setDeletingId(interviewId);
+        setDeleteError("");
+        try {
+          await axios.delete(ServerUrl + "/api/interview/" + interviewId, { withCredentials: true });
+          setInterviews((current) => current.filter((item) => item._id !== interviewId));
+          toast.success("Interview deleted successfully!");
+        } catch (error) {
+          setDeleteError(error.response?.data?.message || "Failed to delete interview. Please try again.");
+          toast.error(error.response?.data?.message || "Failed to delete interview. Please try again.");
+        } finally {
+          setDeletingId(null);
+        }
+      }
+    );
   };
 
   return (
@@ -46,7 +54,17 @@ function InterviewHistory() {
       <Navbar />
       <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-4"><button onClick={() => navigate("/")} aria-label="Back to home" className="mt-1 rounded-xl border border-slate-200 bg-white p-3 text-slate-500 shadow-sm transition hover:border-cyan-200 hover:text-cyan-600"><FaArrowLeft /></button><div><span className="inline-flex items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-600"><FaHistory /> Performance archive</span><h1 className="mt-3 font-display text-3xl font-extrabold text-slate-900">Interview History</h1><p className="mt-1 text-sm font-semibold text-slate-500">Review your past AI interview performance and feedback.</p></div></div>
+          <div className="flex items-start gap-4">
+            <div className="flex items-center gap-2 mt-1">
+              <button onClick={() => navigate(-1)} aria-label="Back" title="Back" className="rounded-xl border border-slate-200 bg-white p-3 text-slate-500 shadow-sm transition hover:border-cyan-200 hover:text-cyan-600">
+                <FaArrowLeft />
+              </button>
+              <button onClick={() => navigate("/")} aria-label="Back to home" title="Back to Home" className="rounded-xl border border-slate-200 bg-white p-3 text-slate-500 shadow-sm transition hover:border-cyan-200 hover:text-cyan-600">
+                <FaHome />
+              </button>
+            </div>
+            <div><span className="inline-flex items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-600"><FaHistory /> Performance archive</span><h1 className="mt-3 font-display text-3xl font-extrabold text-slate-900">Interview History</h1><p className="mt-1 text-sm font-semibold text-slate-500">Review your past AI interview performance and feedback.</p></div>
+          </div>
           <button onClick={() => navigate("/interview")} className="rounded-xl bg-cyan-600 px-5 py-3 text-xs font-bold text-white shadow-md shadow-cyan-600/15 transition hover:bg-cyan-500">Start Mock Interview</button>
         </div>
         {deleteError && <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{deleteError}</div>}

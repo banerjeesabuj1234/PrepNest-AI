@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaArrowLeft, FaCheckCircle } from "react-icons/fa";
+import { FaArrowLeft, FaCheckCircle, FaHome } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import axios from "axios";
@@ -7,9 +7,11 @@ import { ServerUrl } from "../App";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import Navbar from "../components/Navbar";
+import { useToast } from "../components/Toast.jsx";
 
 function Pricing() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [loadingPlan, setLoadingPlan] = useState(null);
   const dispatch = useDispatch();
@@ -76,7 +78,7 @@ function Pricing() {
           );
           dispatch(setUserData(verifypay.data.user));
 
-          alert("Payment successful. Credits added!");
+          toast.success("Payment successful. Credits added!");
           navigate("/");
         },
         theme: {
@@ -103,12 +105,24 @@ function Pricing() {
         <div className="absolute top-1/4 left-1/3 w-64 h-64 rounded-full bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
         <div className="max-w-6xl mx-auto mb-14 flex items-start gap-4 z-10 relative">
-          <button
-            onClick={() => navigate("/")}
-            className="mt-1 p-3 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 transition cursor-pointer shadow-sm"
-          >
-            <FaArrowLeft />
-          </button>
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              onClick={() => navigate(-1)}
+              aria-label="Back"
+              title="Back"
+              className="p-3 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 transition cursor-pointer shadow-sm"
+            >
+              <FaArrowLeft />
+            </button>
+            <button
+              onClick={() => navigate("/")}
+              aria-label="Back to home"
+              title="Back to Home"
+              className="p-3 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 transition cursor-pointer shadow-sm"
+            >
+              <FaHome />
+            </button>
+          </div>
 
           <div className="text-center w-full">
             <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-slate-900">

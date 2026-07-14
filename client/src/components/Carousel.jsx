@@ -64,7 +64,7 @@ function Carousel({ children, itemsPerPage = { mobile: 1, tablet: 2, desktop: 3 
         <button
           onClick={handlePrev}
           type="button"
-          className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center hover:bg-violet-600 hover:border-violet-500 hover:shadow-md hover:shadow-violet-500/20 transition-all shadow-lg z-20 cursor-pointer"
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center hover:bg-cyan-500 hover:border-cyan-400 hover:shadow-md hover:shadow-cyan-500/20 transition-all shadow-lg z-20 cursor-pointer"
         >
           <BsChevronLeft size={20} />
         </button>
@@ -74,7 +74,7 @@ function Carousel({ children, itemsPerPage = { mobile: 1, tablet: 2, desktop: 3 
         <button
           onClick={handleNext}
           type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center hover:bg-violet-600 hover:border-violet-500 hover:shadow-md hover:shadow-violet-500/20 transition-all shadow-lg z-20 cursor-pointer"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center hover:bg-cyan-500 hover:border-cyan-400 hover:shadow-md hover:shadow-cyan-500/20 transition-all shadow-lg z-20 cursor-pointer"
         >
           <BsChevronRight size={20} />
         </button>
@@ -89,7 +89,7 @@ function Carousel({ children, itemsPerPage = { mobile: 1, tablet: 2, desktop: 3 
               type="button"
               onClick={() => setCurrentIndex(idx)}
               className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                currentIndex === idx ? "w-6 bg-violet-600" : "w-2 bg-slate-800 hover:bg-slate-700"
+                currentIndex === idx ? "w-6 bg-cyan-500" : "w-2 bg-slate-800 hover:bg-slate-700"
               }`}
             />
           ))}

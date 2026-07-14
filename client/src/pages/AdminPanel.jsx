@@ -5,6 +5,7 @@ import axios from "axios";
 import { ServerUrl } from "../App";
 import { setUserData } from "../redux/userSlice";
 import { motion, AnimatePresence } from "motion/react";
+import { useToast } from "../components/Toast.jsx";
 import {
   FaUsers,
   FaChartLine,
@@ -14,8 +15,6 @@ import {
   FaTicketAlt,
   FaSignOutAlt,
   FaFileAlt,
-  FaMoon,
-  FaSun,
   FaPlus,
   FaTrash,
   FaEdit,
@@ -43,9 +42,10 @@ function AdminPanel() {
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Dark/Light Mode state
-  const [darkMode, setDarkMode] = useState(false);
+  const darkMode = false;
 
   // Active Tab state
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -58,6 +58,7 @@ function AdminPanel() {
   // Data States
   const [stats, setStats] = useState(null);
   const [usersData, setUsersData] = useState([]);
+  const [selectedUserRowId, setSelectedUserRowId] = useState(null);
   const [usersPagination, setUsersPagination] = useState({ total: 0, page: 1, pages: 1 });
   const [plans, setPlans] = useState([]);
   const [coupons, setCoupons] = useState([]);
@@ -488,20 +489,24 @@ function AdminPanel() {
     }
   };
 
-  // Clear Alert Timeouts
+  // Clear Alert Timeouts and trigger Toast notifications
   useEffect(() => {
     if (error) {
+      // Don't toast if it's the Access Forbidden full screen page error
+      if (!stats && activeTab === "dashboard") return;
+      toast.error(error);
       const t = setTimeout(() => setError(""), 5000);
       return () => clearTimeout(t);
     }
-  }, [error]);
+  }, [error, stats, activeTab, toast]);
 
   useEffect(() => {
     if (success) {
+      toast.success(success);
       const t = setTimeout(() => setSuccess(""), 4000);
       return () => clearTimeout(t);
     }
-  }, [success]);
+  }, [success, toast]);
 
   // Gate check UI render
   if (!userData) {
@@ -544,42 +549,18 @@ function AdminPanel() {
 
   return (
     <div className={`min-h-screen flex ${darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-800"} font-sans transition-colors duration-300`}>
-      {/* Dynamic Alerts */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-6 right-6 z-50 bg-red-50 border border-red-200 text-red-700 px-5 py-3.5 rounded-xl shadow-xl flex items-center gap-3 text-sm font-bold"
-          >
-            <FaInfoCircle />
-            <span>{error}</span>
-          </motion.div>
-        )}
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-6 right-6 z-50 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-3.5 rounded-xl shadow-xl flex items-center gap-3 text-sm font-bold"
-          >
-            <FaCheck />
-            <span>{success}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Dynamic Alerts are handled by ToastProvider */}
 
       {/* SIDEBAR PANEL */}
-      <div className={`w-64 flex-shrink-0 border-r ${darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"} flex flex-col justify-between p-6 shadow-sm`}>
+      <div className="w-64 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col justify-between p-6 shadow-sm">
         <div className="space-y-8">
           {/* Brand Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
             <div className="bg-gradient-to-tr from-cyan-600 to-cyan-500 text-white p-2.5 rounded-xl">
               <FaUserShield size={20} />
             </div>
-            <h2 className="text-lg font-bold font-display bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-350 bg-clip-text text-transparent">
-              AdminNest
+            <h2 className="text-lg font-bold font-display text-slate-900">
+              PrepNest AI
             </h2>
           </div>
 
@@ -601,8 +582,8 @@ function AdminPanel() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition cursor-pointer ${isActive
-                      ? "bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-900"
-                      : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white"
+                      ? "bg-cyan-600 text-white shadow-md shadow-cyan-600/10 border border-cyan-600"
+                      : "text-slate-600 hover:bg-cyan-50/70 hover:text-cyan-600 border border-transparent"
                     }`}
                 >
                   {tab.icon}
@@ -620,15 +601,14 @@ function AdminPanel() {
               setProfileForm({ name: userData.name, password: "", confirmPassword: "" });
               setShowProfileModal(true);
             }}
-            className={`p-3 rounded-xl flex items-center gap-3 cursor-pointer border ${darkMode ? "bg-slate-850 hover:bg-slate-800 border-slate-800" : "bg-slate-50 hover:bg-slate-100 border-slate-150"
-              }`}
+            className="p-3 rounded-xl flex items-center gap-3 cursor-pointer border bg-slate-50 hover:bg-slate-100 border-slate-150"
           >
             <div className="w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
               {userData.name.slice(0, 1).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate">{userData.name}</p>
-              <p className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold uppercase tracking-wider">
+              <p className="text-xs font-bold truncate text-slate-800">{userData.name}</p>
+              <p className="text-[10px] text-cyan-600 font-bold uppercase tracking-wider">
                 {userData.role}
               </p>
             </div>
@@ -636,7 +616,7 @@ function AdminPanel() {
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 bg-red-50/20 hover:bg-red-50/50 text-xs font-bold transition cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-250 text-red-650 bg-red-50/30 hover:bg-red-50/60 text-xs font-bold transition cursor-pointer"
           >
             <FaSignOutAlt />
             <span>Sign Out</span>
@@ -654,14 +634,6 @@ function AdminPanel() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Theme Toggle */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-3 rounded-xl border transition cursor-pointer ${darkMode ? "bg-slate-850 border-slate-800 text-amber-400" : "bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-800"
-                }`}
-            >
-              {darkMode ? <FaSun size={15} /> : <FaMoon size={15} />}
-            </button>
           </div>
         </header>
 
@@ -754,7 +726,7 @@ function AdminPanel() {
                     </thead>
                     <tbody className="text-xs font-semibold divide-y divide-slate-100 dark:divide-slate-850">
                       {stats.recentLogs.map((log) => (
-                        <tr key={log._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                        <tr key={log._id} className="hover:bg-cyan-100/70 transition-colors duration-150">
                           <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                             {log.userId?.name || "System"} ({log.userId?.role || "System"})
                           </td>
@@ -791,8 +763,7 @@ function AdminPanel() {
                       setUserSearch(e.target.value);
                       setUserPage(1);
                     }}
-                    className={`px-4 py-2 rounded-xl border text-sm outline-none ${darkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-200"
-                      }`}
+                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition"
                   />
                   <select
                     value={userRoleFilter}
@@ -800,8 +771,7 @@ function AdminPanel() {
                       setUserRoleFilter(e.target.value);
                       setUserPage(1);
                     }}
-                    className={`px-4 py-2 rounded-xl border text-sm cursor-pointer outline-none ${darkMode ? "bg-slate-900 border-slate-800 text-slate-300" : "bg-white border-slate-200"
-                      }`}
+                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm cursor-pointer focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition"
                   >
                     <option value="">All Roles</option>
                     <option value="Admin">Admin</option>
@@ -838,25 +808,29 @@ function AdminPanel() {
                     </thead>
                     <tbody className="text-xs font-semibold divide-y divide-slate-100 dark:divide-slate-850">
                       {usersData.map((user) => (
-                        <tr key={user._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                        <tr
+                          key={user._id}
+                          className="transition-colors duration-150 hover:bg-cyan-100/70"
+                        >
                           <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">{user.name}</td>
                           <td className="py-4 px-6 text-slate-500 dark:text-slate-400">{user.email}</td>
                           <td className="py-4 px-6">
                             <span className={`px-2.5 py-1 rounded font-bold uppercase ${user.role === "Admin"
-                                ? "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
+                                ? "bg-red-100 text-red-700"
                                 : user.role === "Editor"
-                                  ? "bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400"
+                                  ? "bg-purple-100 text-purple-700"
                                   : user.role === "Staff"
-                                    ? "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
-                                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                              }`}>
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-slate-100 text-slate-700"
+                                }`}>
                               {user.role}
                             </span>
                           </td>
                           <td className="py-4 px-6 font-bold text-cyan-600 dark:text-cyan-400">{user.credits}</td>
                           <td className="py-4 px-6 text-right space-x-2">
                             <button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setCurrentUserEdit(user);
                                 setUserForm({ name: user.name, email: user.email, password: "", role: user.role, credits: user.credits });
                                 setShowUserModal(true);
@@ -866,7 +840,10 @@ function AdminPanel() {
                               <FaEdit />
                             </button>
                             <button
-                              onClick={() => handleDeleteUser(user._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteUser(user._id);
+                              }}
                               className="text-red-600 hover:text-red-700 bg-red-50 dark:bg-red-950/30 p-2.5 rounded-lg cursor-pointer hover:scale-105 transition"
                             >
                               <FaTrash />
@@ -1012,7 +989,7 @@ function AdminPanel() {
                     {coupons.map((coupon) => {
                       const isExpired = new Date(coupon.expiresAt) < new Date();
                       return (
-                        <tr key={coupon._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                        <tr key={coupon._id} className="hover:bg-cyan-100/70 transition-colors duration-150">
                           <td className="py-4 px-6 font-mono font-bold text-slate-950 dark:text-white uppercase tracking-wide">
                             {coupon.code}
                           </td>
@@ -1108,7 +1085,7 @@ function AdminPanel() {
                   <h3 className="text-sm font-bold font-display mb-4">Tags</h3>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {tags.map((t) => (
-                      <span key={t._id} className="bg-cyan-50 dark:bg-cyan-950/30 text-cyan-600 dark:text-cyan-400 border border-cyan-100 px-3 py-1 rounded-full text-xs font-bold">
+                      <span key={t._id} className="bg-cyan-100 dark:bg-cyan-950/40 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-900/50 px-3 py-1 rounded-full text-xs font-extrabold shadow-sm">
                         #{t.name}
                       </span>
                     ))}
@@ -1346,146 +1323,147 @@ function AdminPanel() {
       {/* ========================================================================= */}
 
       {/* MODAL: ADD/EDIT USER */}
-      {showUserModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-6 text-slate-800">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full relative">
-            <button onClick={() => setShowUserModal(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-650 cursor-pointer">
-              <FaTimes />
-            </button>
-            <h3 className="text-xl font-bold font-display mb-6">{currentUserEdit ? "Edit User Properties" : "Create New User Account"}</h3>
-            <form onSubmit={handleUserSubmit} className="space-y-4 text-sm">
-              <div>
-                <label className="block text-slate-500 font-bold mb-1">Name</label>
-                <input
-                  type="text"
-                  required
-                  value={userForm.name}
-                  onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-500 font-bold mb-1">Email</label>
-                <input
-                  type="email"
-                  required
-                  value={userForm.email}
-                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
-                />
-              </div>
-              {!currentUserEdit && (
-                <div>
-                  <label className="block text-slate-500 font-bold mb-1">Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={userForm.password}
-                    onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
-                  />
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-500 font-bold mb-1">User Role</label>
-                  <select
-                    value={userForm.role}
-                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-                    className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer outline-none"
-                  >
-                    <option value="User">User</option>
-                    <option value="Staff">Staff</option>
-                    <option value="Editor">Editor</option>
-                    <option value="Admin">Admin</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-500 font-bold mb-1">Credits Balance</label>
-                  <input
-                    type="number"
-                    value={userForm.credits}
-                    onChange={(e) => setUserForm({ ...userForm, credits: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
-                  />
-                </div>
-              </div>
-              <button type="submit" className="w-full mt-6 bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-500 shadow-md">
-                Save User
-              </button>
-            </form>
-          </motion.div>
-        </div>
-      )}
+       {/* MODAL: ADD/EDIT USER */}
+       {showUserModal && (
+         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-6 text-slate-800">
+           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full relative text-slate-800">
+             <button onClick={() => setShowUserModal(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-650 cursor-pointer">
+               <FaTimes />
+             </button>
+             <h3 className="text-xl font-bold font-display mb-6 text-slate-800">{currentUserEdit ? "Edit User Properties" : "Create New User Account"}</h3>
+             <form onSubmit={handleUserSubmit} className="space-y-4 text-sm">
+               <div>
+                 <label className="block text-slate-500 font-bold mb-1">Name</label>
+                 <input
+                   type="text"
+                   required
+                   value={userForm.name}
+                   onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-slate-800 transition"
+                 />
+               </div>
+               <div>
+                 <label className="block text-slate-500 font-bold mb-1">Email</label>
+                 <input
+                   type="email"
+                   required
+                   value={userForm.email}
+                   onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-slate-800 transition"
+                 />
+               </div>
+               {!currentUserEdit && (
+                 <div>
+                   <label className="block text-slate-500 font-bold mb-1">Password</label>
+                   <input
+                     type="password"
+                     required
+                     value={userForm.password}
+                     onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                     className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-slate-800 transition"
+                   />
+                 </div>
+               )}
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="block text-slate-500 font-bold mb-1">User Role</label>
+                   <select
+                     value={userForm.role}
+                     onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                     className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 cursor-pointer outline-none text-slate-800 transition"
+                   >
+                     <option value="User">User</option>
+                     <option value="Staff">Staff</option>
+                     <option value="Editor">Editor</option>
+                     <option value="Admin">Admin</option>
+                   </select>
+                 </div>
+                 <div>
+                   <label className="block text-slate-500 font-bold mb-1">Credits Balance</label>
+                   <input
+                     type="number"
+                     value={userForm.credits}
+                     onChange={(e) => setUserForm({ ...userForm, credits: e.target.value })}
+                     className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-slate-800 transition"
+                   />
+                 </div>
+               </div>
+               <button type="submit" className="w-full mt-6 bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-500 shadow-md">
+                 Save User
+               </button>
+             </form>
+           </motion.div>
+         </div>
+       )}
 
       {/* MODAL: ADD/EDIT PRICING PLAN */}
       {showPlanModal && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-6 text-slate-800">
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full relative">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative text-slate-800 dark:text-slate-100">
             <button onClick={() => setShowPlanModal(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-650 cursor-pointer">
               <FaTimes />
             </button>
-            <h3 className="text-xl font-bold font-display mb-6">{currentPlanEdit ? "Edit Pricing Tier" : "Create Pricing Tier"}</h3>
+            <h3 className="text-xl font-bold font-display mb-6 text-slate-800 dark:text-white">{currentPlanEdit ? "Edit Pricing Tier" : "Create Pricing Tier"}</h3>
             <form onSubmit={handlePlanSubmit} className="space-y-4 text-sm">
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Plan Name</label>
+                <label className="block text-slate-500 dark:text-slate-400 font-bold mb-1">Plan Name</label>
                 <input
                   type="text"
                   required
                   value={planForm.name}
                   onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-800 dark:text-white"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Amount (Rs)</label>
+                  <label className="block text-slate-500 dark:text-slate-400 font-bold mb-1">Amount (Rs)</label>
                   <input
                     type="number"
                     required
                     value={planForm.amount}
                     onChange={(e) => setPlanForm({ ...planForm, amount: Number(e.target.value) })}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-800 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Credits Reward</label>
+                  <label className="block text-slate-500 dark:text-slate-400 font-bold mb-1">Credits Reward</label>
                   <input
                     type="number"
                     required
                     value={planForm.credits}
                     onChange={(e) => setPlanForm({ ...planForm, credits: Number(e.target.value) })}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-800 dark:text-white"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Badge (optional)</label>
+                <label className="block text-slate-500 dark:text-slate-400 font-bold mb-1">Badge (optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. Popular, Best Value"
                   value={planForm.badge}
                   onChange={(e) => setPlanForm({ ...planForm, badge: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-800 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Description</label>
+                <label className="block text-slate-500 dark:text-slate-400 font-bold mb-1">Description</label>
                 <textarea
                   required
                   value={planForm.description}
                   onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none h-16 resize-none"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none h-16 resize-none text-slate-800 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Features (One per line)</label>
+                <label className="block text-slate-500 dark:text-slate-400 font-bold mb-1">Features (One per line)</label>
                 <textarea
                   required
                   value={planForm.features}
                   placeholder="e.g. 500 AI Credits&#10;Full History Tracking&#10;Priority Server Access"
                   onChange={(e) => setPlanForm({ ...planForm, features: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none h-24 resize-none font-mono text-xs"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none h-24 resize-none font-mono text-xs text-slate-800 dark:text-white"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -1496,7 +1474,7 @@ function AdminPanel() {
                   onChange={(e) => setPlanForm({ ...planForm, isActive: e.target.checked })}
                   className="w-4 h-4 text-cyan-600 rounded cursor-pointer"
                 />
-                <label htmlFor="planActive" className="text-slate-650 font-bold text-xs select-none cursor-pointer">
+                <label htmlFor="planActive" className="text-slate-650 dark:text-slate-300 font-bold text-xs select-none cursor-pointer">
                   Activate plan instantly for purchase
                 </label>
               </div>

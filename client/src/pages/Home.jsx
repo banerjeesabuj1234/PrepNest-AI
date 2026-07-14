@@ -49,22 +49,28 @@ function Home() {
 
   const stepItems = [
     {
-      icon: <BsRobot size={24} className="text-cyan-500" />,
+      icon: <BsFileEarmarkPdf size={24} className="text-cyan-500" />,
       step: "STEP 1",
-      title: "Role & Experience Selection",
-      desc: "AI adjusts difficulty based on selected job role.",
+      title: "ATS Resume Audit",
+      desc: "Upload resume to scan for keyword gaps and target role compatibility.",
+    },
+    {
+      icon: <BsCode size={24} className="text-cyan-500" />,
+      step: "STEP 2",
+      title: "Mock & Coding Practice",
+      desc: "Solve aptitude exams and execute programming tests in real-time.",
     },
     {
       icon: <BsMic size={24} className="text-cyan-500" />,
-      step: "STEP 2",
-      title: "Smart Voice Interview",
-      desc: "Dynamic follow-up questions based on your answers.",
+      step: "STEP 3",
+      title: "AI Voice Interview",
+      desc: "Practice real-time adaptive interviews with role-specific voice questions.",
     },
     {
-      icon: <BsClock size={24} className="text-cyan-500" />,
-      step: "STEP 3",
-      title: "Timer Based Simulation",
-      desc: "Real interview pressure with time tracking.",
+      icon: <BsBarChart size={24} className="text-cyan-500" />,
+      step: "STEP 4",
+      title: "Detailed Analytics",
+      desc: "Get deep performance insights, scoring feedback, and PDF reports.",
     },
   ];
 
@@ -103,24 +109,24 @@ function Home() {
 
   const modeItems = [
     {
-      img: hrImg,
-      title: "HR Interview Mode",
-      desc: "Behavioral and communication based evaluation.",
+      img: resumeImg,
+      title: "ATS Resume Checker",
+      desc: "Scan your resume for keyword alignment, style formatting, and compatibility with target job descriptions.",
+    },
+    {
+      img: evalImg,
+      title: "Mock Aptitude Tests",
+      desc: "Practice company-specific logical reasoning, quantitative analysis, and verbal aptitude exams.",
     },
     {
       img: techImg,
-      title: "Technical Mode",
-      desc: "Deep technical questioning based on selected role.",
+      title: "Coding Practice IDE",
+      desc: "Solve structural DSA coding problems with multiple test cases in a live sandbox editor.",
     },
     {
-      img: confidenceImg,
-      title: "Confidence Detection",
-      desc: "Basic tone and voice analysis insights.",
-    },
-    {
-      img: creditImg,
-      title: "Credits System",
-      desc: "Unlock premium interview sessions easily.",
+      img: hrImg,
+      title: "AI Voice Interviews",
+      desc: "Experience voice-based mock interviews with adaptive follow-ups, tone assessment, and deep scoring.",
     },
   ];
 
@@ -150,7 +156,7 @@ function Home() {
           >
             <div className="bg-white text-slate-700 text-xs font-semibold px-4.5 py-2 rounded-full flex items-center gap-2 border border-slate-200/80 shadow-sm">
               <HiSparkles size={14} className="text-cyan-500 animate-pulse" />
-              <span>AI Powered Smart Interview Platform</span>
+              <span>AI-Powered All-in-One Placement Preparation Platform</span>
             </div>
           </motion.div>
 
@@ -162,20 +168,20 @@ function Home() {
               transition={{ duration: 0.6, ease: "easeOut" }}
               className="text-4xl md:text-6xl font-display font-extrabold leading-tight max-w-4xl mx-auto tracking-tight text-slate-900"
             >
-              Practice Interviews with{" "}
+              Prep Smart.{" "}
               <span className="bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent px-2">
-                AI Intelligence
-              </span>
+                Crack Faster.
+              </span>{" "}
+              Get Hired.
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-slate-500 mt-6 max-w-2xl mx-auto text-base md:text-lg leading-relaxed font-medium"
+              className="text-slate-500 mt-6 max-w-3xl mx-auto text-base md:text-lg leading-relaxed font-medium"
             >
-              Role-based mock interviews with smart follow-ups, adaptive
-              difficulty, and real-time performance evaluation.
+              PrepNest AI is your all-in-one AI-powered placement preparation platform with ATS Resume Checker, Mock Tests, Coding Tests, and AI Mock Interviews.
             </motion.p>
             {/* CTAs */}
             <motion.div
@@ -363,9 +369,9 @@ function Home() {
               variants={fadeInUp}
               className="text-3xl font-display font-bold text-center mb-10 text-slate-800"
             >
-              Multiple Interview{" "}
+              Explore Our Core{" "}
               <span className="bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">
-                Modes
+                Modules
               </span>
             </motion.h2>
 

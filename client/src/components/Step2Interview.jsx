@@ -3,7 +3,7 @@ import maleVideo from "../assets/videos/male-ai.mp4";
 import femaleVideo from "../assets/videos/female-ai.mp4";
 import Timer from "./Timer";
 import { motion, AnimatePresence } from "motion/react";
-import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
+import { FaMicrophone, FaMicrophoneSlash, FaArrowLeft } from "react-icons/fa";
 import { useState } from "react";
 import { useRef } from "react";
 import { useEffect } from "react";
@@ -11,7 +11,7 @@ import axios from "axios";
 import { ServerUrl } from "../App";
 import { BsArrowRight, BsSliders } from "react-icons/bs";
 
-function Step2Interview({ interviewData, onFinish }) {
+function Step2Interview({ interviewData, onFinish, onBack, onBackHome }) {
   const { interviewId, questions, userName } = interviewData;
   const [isIntroPhase, setIsIntroPhase] = useState(true);
 
@@ -334,8 +334,30 @@ function Step2Interview({ interviewData, onFinish }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 text-slate-800 font-sans">
-      <div className="w-full max-w-6xl bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] flex flex-col lg:flex-row min-h-[80vh]">
+    <div className="flex flex-col text-slate-800 font-sans">
+      {onBack && (
+        <div className="w-full mb-6 flex justify-start z-10">
+          <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
+            <button
+              onClick={onBack}
+              type="button"
+              className="flex items-center gap-2 hover:text-cyan-600 transition cursor-pointer"
+            >
+              <FaArrowLeft size={12} />
+              <span>Back</span>
+            </button>
+            <span className="text-slate-300">|</span>
+            <button
+              onClick={onBackHome}
+              type="button"
+              className="hover:text-cyan-600 transition cursor-pointer"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="w-full bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] flex flex-col lg:flex-row min-h-[80vh]">
         {/* Left Video/Audio Info Panel */}
         <div className="w-full lg:w-[35%] bg-slate-50 p-6 flex flex-col items-center justify-between border-b lg:border-b-0 lg:border-r border-slate-200/80">
           {/* AI Avatar Video container */}

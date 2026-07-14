@@ -158,14 +158,14 @@ function AtsChecker() {
   const getScoreColor = (score) => {
     if (score >= 80) return "#10b981"; // Green
     if (score >= 50) return "#f59e0b"; // Yellow/Orange
-    return "#ef4444"; // Red
+    return "#06b6d4"; // Cyan
   };
 
   const getScoreBgClass = (score) => {
     if (score >= 80) return "bg-emerald-50 text-emerald-700 border-emerald-250";
     if (score >= 50)
       return "bg-amber-55 bg-amber-50 text-amber-700 border-amber-250";
-    return "bg-rose-50 text-rose-700 border-rose-250";
+    return "bg-cyan-50 text-cyan-700 border-cyan-200";
   };
 
   const handlePrint = () => {
@@ -189,13 +189,20 @@ function AtsChecker() {
       <div className="flex-1 px-4 py-12 md:px-8 print:p-0">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8 flex items-center justify-between print:hidden">
-            <div className="flex gap-4">
+            <div className="flex items-center gap-4 text-xs font-bold text-slate-500">
               <button
-                onClick={() => navigate("/")}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition text-xs font-bold cursor-pointer"
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 hover:text-slate-900 transition cursor-pointer"
               >
                 <BsArrowLeft />
-                <span>Back to Home</span>
+                <span>Back</span>
+              </button>
+              <span className="text-slate-300">|</span>
+              <button
+                onClick={() => navigate("/")}
+                className="hover:text-slate-900 transition cursor-pointer"
+              >
+                Back to Home
               </button>
               {report && (
                 <button
